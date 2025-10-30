@@ -1,0 +1,46 @@
+name: MLflow Model Sanity Check CI
+
+# Triggers this workflow on push events to the main branch
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch: # Allows manual trigger
+
+jobs:
+  model_check:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          
+      - name: Install Required Python Dependencies
+        run: |
+          # Install libraries needed to run the sanity check script
+          pip install mlflow scikit-learn pandas
+          
+      # NOTE: If your MLflow server requires authentication (e.g., API keys) 
+      # or if the GCS artifact store requires credentials, you would add steps here 
+      # to configure Google Cloud authentication for the CI runner.
+
+      - name: Run Production Model Sanity Check
+        # Execute the script. If the script returns 1, this step will fail, 
+        # and the CI job will stop.
+        run: python ci_sanity_check.py
+        
+      - name: CI Success Message
+        if: success()
+        run: |
+          echo "✨ CI passed: The Production model was successfully loaded and passed the quality check."
+
+      - name: CI Failure Message
+        if: failure()
+        run: |
+          echo "🚨 CI failed: Review logs above. Either the script failed to connect to MLflow/GCS, or the Production model failed the sanity check (accuracy < 0.90)."
