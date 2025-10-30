@@ -49,14 +49,16 @@ jobs:
         # This will fail the CI if the script returns a non-zero exit code (0 for pass, 1 for fail)
         run: python ci_sanity_check.py
 
-      # 6. CI success message
+      # 6. CI success message (Now using block scalar '|')
       - name: CI Success Message
         # Runs only if the previous steps succeeded (including the model check)
         if: success()
-        run: echo "CI passed: The Production model was successfully loaded and passed the quality check."
+        run: |
+          echo "CI passed: The Production model was successfully loaded and passed the quality check."
 
-      # 7. CI failure message
+      # 7. CI failure message (Now using block scalar '|')
       - name: CI Failure Message
         # Runs only if any previous step failed
         if: failure()
-        run: echo "CI failed: Review logs above. Either the script failed to connect to MLflow/GCS, or the Production model failed the sanity check (accuracy < 0.90)."
+        run: |
+          echo "CI failed: Review logs above. Either the script failed to connect to MLflow/GCS, or the Production model failed the sanity check (accuracy < 0.90)."
