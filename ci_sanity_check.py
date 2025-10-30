@@ -2,7 +2,7 @@ import os
 import mlflow
 import pandas as pd
 from sklearn import metrics
-from google.cloud import storage 
+
 
 
 MLFLOW_TRACKING_URI = "http://34.135.5.87:8100/" #  MLflow URI
