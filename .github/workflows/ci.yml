@@ -11,6 +11,11 @@ on:
 jobs:
   model_check:
     runs-on: ubuntu-latest
+    
+    # Define environment variables used by the authentication step
+    env:
+      # This is the variable used by the authentication action to set up the GCS access
+      GCP_PROJECT_ID: "fresh-bloom-472914-s8" 
 
     steps:
       # 1. Checkout repository
@@ -30,23 +35,28 @@ jobs:
           pip install -r requirements.txt
 
       # 4. Authenticate to Google Cloud
-      # Uses service account key stored in GitHub Secrets
+      # This is necessary because your MLflow artifacts are in GCS (gs://...)
+      # This step requires a secret named 'GCP_SERVICE_ACCOUNT_KEY' to be set in GitHub Secrets.
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}"
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          # The project ID is needed for GCS access
+          project_id: ${{ env.GCP_PROJECT_ID }} 
 
       # 5. Run the model sanity check
       - name: Run Production Model Sanity Check
+        # This will fail the CI if the script returns a non-zero exit code (0 for pass, 1 for fail)
         run: python ci_sanity_check.py
 
       # 6. CI success message
       - name: CI Success Message
+        # Runs only if the previous steps succeeded (including the model check)
         if: success()
         run: echo "CI passed: The Production model was successfully loaded and passed the quality check."
 
       # 7. CI failure message
       - name: CI Failure Message
+        # Runs only if any previous step failed
         if: failure()
         run: echo "CI failed: Review logs above. Either the script failed to connect to MLflow/GCS, or the Production model failed the sanity check (accuracy < 0.90)."
-
