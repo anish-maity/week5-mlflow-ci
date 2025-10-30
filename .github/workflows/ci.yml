@@ -1,44 +1,52 @@
 name: MLflow Model Sanity Check CI
 
-# Triggers this workflow on push events to the main branch
 on:
   push:
     branches:
       - main
       - dev
       - master
-  workflow_dispatch: # Allows manual trigger
+  workflow_dispatch:
 
 jobs:
   model_check:
     runs-on: ubuntu-latest
-    
+
     steps:
+      # 1️⃣ Checkout repository
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.10
+      # 2️⃣ Set up Python
+      - name: Set up Python 3.11
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
-          
+          python-version: '3.11'
+
+      # 3️⃣ Install dependencies
       - name: Install Required Python Dependencies
         run: |
-          pip install -r requirements.txt     
-          
-      
+          pip install --upgrade pip
+          pip install -r requirements.txt
 
+      # 4️⃣ Authenticate to Google Cloud
+      # This uses your service account key stored in GitHub Secrets
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
+      # 5️⃣ Run the model sanity check
       - name: Run Production Model Sanity Check
-        # Execute the script. If the script returns 1, this step will fail, 
-        # and the CI job will stop.
         run: python ci_sanity_check.py
-        
+
+      # 6️⃣ CI success message
       - name: CI Success Message
         if: success()
-        run: |
-          echo "✨ CI passed: The Production model was successfully loaded and passed the quality check."
+        run: echo "✨ CI passed: The Production model was successfully loaded and passed the quality check."
 
+      # 7️⃣ CI failure message
       - name: CI Failure Message
         if: failure()
-        run: |
-          echo "🚨 CI failed: Review logs above. Either the script failed to connect to MLflow/GCS, or the Production model failed the sanity check (accuracy < 0.90)."
+        run: echo "🚨 CI failed: Review logs above. Either the script failed to connect to MLflow/GCS, or the Production model failed the sanity check (accuracy < 0.90)."
+
