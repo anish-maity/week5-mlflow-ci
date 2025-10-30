@@ -13,40 +13,40 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repository
+      # 1. Checkout repository
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # 2️⃣ Set up Python
+      # 2. Set up Python
       - name: Set up Python 3.11
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
-      # 3️⃣ Install dependencies
+      # 3. Install dependencies
       - name: Install Required Python Dependencies
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      # 4️⃣ Authenticate to Google Cloud
-      # This uses your service account key stored in GitHub Secrets
+      # 4. Authenticate to Google Cloud
+      # Uses service account key stored in GitHub Secrets
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
-      # 5️⃣ Run the model sanity check
+      # 5. Run the model sanity check
       - name: Run Production Model Sanity Check
         run: python ci_sanity_check.py
 
-      # 6️⃣ CI success message
+      # 6. CI success message
       - name: CI Success Message
         if: success()
-        run: echo "✨ CI passed: The Production model was successfully loaded and passed the quality check."
+        run: echo "CI passed: The Production model was successfully loaded and passed the quality check."
 
-      # 7️⃣ CI failure message
+      # 7. CI failure message
       - name: CI Failure Message
         if: failure()
-        run: echo "🚨 CI failed: Review logs above. Either the script failed to connect to MLflow/GCS, or the Production model failed the sanity check (accuracy < 0.90)."
+        run: echo "CI failed: Review logs above. Either the script failed to connect to MLflow/GCS, or the Production model failed the sanity check (accuracy < 0.90)."
 
