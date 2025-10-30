@@ -24,12 +24,9 @@ jobs:
           
       - name: Install Required Python Dependencies
         run: |
-          # Install libraries needed to run the sanity check script
-          pip install mlflow scikit-learn pandas
+          pip install -r requirements.txt     
           
-      # NOTE: If your MLflow server requires authentication (e.g., API keys) 
-      # or if the GCS artifact store requires credentials, you would add steps here 
-      # to configure Google Cloud authentication for the CI runner.
+      
 
       - name: Run Production Model Sanity Check
         # Execute the script. If the script returns 1, this step will fail, 
